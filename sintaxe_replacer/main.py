@@ -10,15 +10,6 @@ def lerEntrada(path):
             read_lines.append(read_line)
         return read_lines
 
-def remove_includes(code_lines):
-    processed_lines = []
-
-    for line in code_lines:
-        if '#include' not in line: 
-            processed_lines.append(line)
-            
-    return processed_lines
-
 def semicolons_remove(code_lines):
     processed_lines = []
     
@@ -37,7 +28,7 @@ def brackets_remove(code_lines):
 
         while '{' in line:
             push(pilha, '{')
-            line = line.replace('{', '', 1)  # Remove o primeiro '{' encontrado
+            line = line.replace('{', ':', 1)  # Remove o primeiro '{' encontrado
 
         while '}' in line:
             pop(pilha)
@@ -83,11 +74,10 @@ def is_empty(pilha):
     return len(pilha) == 0
 
 def main():
-    input_path = "sintaxe_replacer/execution/input.txt"
-    output_path = "sintaxe_replacer/execution/output.txt"
+    input_path = "sintaxe_replacer/io/input.txt"
+    output_path = "sintaxe_replacer/io/output.py"
     pure_lines = lerEntrada(input_path) # Recebe o codigo não formatado para o python
-    no_includes = remove_includes(pure_lines) # remove os `#includes` 
-    no_semicolon_lines = semicolons_remove(no_includes) # remove do codigo os `;`
+    no_semicolon_lines = semicolons_remove(pure_lines) # remove do codigo os `;`
     formatted_lines = brackets_remove(no_semicolon_lines) # remove as `{}`
     
     print("\nENTRADA:")
