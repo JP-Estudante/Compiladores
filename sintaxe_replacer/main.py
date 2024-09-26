@@ -1,5 +1,3 @@
-import os
-
 def lerEntrada(path):
     read_lines = []
     
@@ -10,7 +8,7 @@ def lerEntrada(path):
             read_lines.append(read_line)
         return read_lines
 
-def semicolons_remove(code_lines):
+def semicolons_remove(code_lines): 
     processed_lines = []
     
     for line in code_lines:
