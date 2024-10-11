@@ -1,14 +1,8 @@
-seisuu mein(){
-    seisuu idade = 20;
-    shingi estado = false;
+seisuu num = 10;
 
-    moshi (idade >= 18 katsu idade <= 65) {
-        hyouji("Adulto.");
-    } sore igai moshi (idade < 18 mata wa idade > 65) {
-        hyouji("Menor de idade ou idoso.");
-    }
-    
-    moshi (estado dewa nai) {
-        hyouji("O estado é falso.");
-    }
-}
+hyouji(num);
+
+hyouji("Somando + 1");
+num = num + 1;
+
+hyouji(num);
