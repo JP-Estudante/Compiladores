@@ -29,13 +29,42 @@ delimiters = {' ','=',';','{','}','[',']'}
 operators = {'=', '+', '-', '*', '/'}
 
 
-def is_reserved_keyword(str):
-    if str in reserved_keywords:
+def is_reserved_keyword(string):
+    """
+    Verifica se uma determinada string é uma palavra-chave reservada na linguagem de programação.
+
+    Args:
+        string (str): A string a ser verificada.
+
+    Returns:
+        bool: Retorna True se a string for uma palavra-chave reservada, caso contrário, retorna False.
+
+    Comportamento:
+        - Compara a string fornecida com uma lista ou conjunto de palavras-chave reservadas.
+        - Retorna True se houver uma correspondência, indicando que a string é uma palavra reservada.
+    """
+    if string in reserved_keywords:
        return True 
     return False
 
 
 def read_file(file_path):
+    """
+    Lê o conteúdo de um arquivo e retorna uma lista de linhas.
+
+    Args:
+        file_path (str): O caminho para o arquivo a ser lido.
+
+    Returns:
+        list of str: Uma lista de strings, onde cada string representa uma linha do arquivo.
+                     Retorna uma lista vazia se o arquivo não for encontrado ou se ocorrer um erro de leitura.
+
+    Comportamento:
+        - Tenta abrir o arquivo no modo de leitura ('r') com codificação UTF-8.
+        - Retorna o conteúdo do arquivo como uma lista de linhas.
+        - Imprime uma mensagem de erro e retorna uma lista vazia se o arquivo não for encontrado (FileNotFoundError) 
+          ou se houver um problema na leitura (IOError).
+    """
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
             lines = file.readlines()
@@ -49,18 +78,63 @@ def read_file(file_path):
 
 
 def analyze_line(lines):
+    """
+    Analisa uma lista de linhas de código, tokenizando elementos e verificando 
+    erros sintáticos básicos, como a ausência de um ponto e vírgula (';') no final da linha.
+
+    Args:
+        lines (list of str): Uma lista de strings, onde cada string representa uma linha de código a ser analisada.
+
+    Returns:
+        list: Uma lista de tokens extraídos das linhas de código.
+
+    Comportamento:
+        - Para cada linha, separa tokens com base em delimitadores e operadores.
+        - Gera uma mensagem de erro caso o último caractere de uma linha não seja um ponto e vírgula (';').
+    """
     tokens = [] # Lista com os tokens
     token = ""
     
     for line in lines:
-        for char in line:
+        line_lenght = len(line.strip())
+        
+        for i, char in enumerate(line):
+            is_last_char = i == line_lenght - 1
+            
             if char in delimiters or char in operators:
-                if token:
+                if token: # Se tiver algo no token
                     tokens.append(token)
                     token = ""
-            token += char
-        return tokens
+                    
+            if is_last_char and char != ';': # Se for o caracter final e não for `;`
+                report_error(f"';' esperado no final da linha, encontrado '{char}'")
+                
+            token += char # Enquanto `char` não for um delimitador ou operador, continua adicionando
             
+        if token:
+            tokens.append(token)
+            token = ""
+          
+    # Remove tokens que são apenas espaços ou quebras de linha
+    tokens = [t.strip() for t in tokens if t.strip()]
+    
+    return tokens
+
+
+def report_error(message):
+    """
+    Exibe ou registra uma mensagem de erro durante a análise do código.
+
+    Args:
+        message (str): A mensagem de erro a ser exibida, descrevendo o tipo e a localização do erro.
+
+    Comportamento:
+        - Recebe uma mensagem de erro como string e a imprime diretamente no console.
+        - Pode ser adaptada para registrar erros em uma lista ou arquivo, dependendo da necessidade.
+    """
+    print(f"Erro: {message}")
+       
+          
 file_path = "io/input.niko"
 lines = read_file(file_path)
 print(analyze_line(lines))
