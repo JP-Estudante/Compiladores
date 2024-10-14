@@ -1,8 +1,3 @@
-from pyparsing import line
-
-
-file_path = "io/input.niko"
-
 # Dicionário de palavras-chave e seus equivalentes em Python
 reserved_keywords = {
     "mein": "main",             # Marca o início do programa `main`
@@ -30,7 +25,9 @@ reserved_keywords = {
     "dewa nai": "not"           # Representa o operador lógico `not`
 }
 
-lines = []
+delimiters = {' ','=',';','{','}','[',']'}
+operators = {'=', '+', '-', '*', '/'}
+
 
 def is_reserved_keyword(str):
     if str in reserved_keywords:
@@ -38,10 +35,32 @@ def is_reserved_keyword(str):
     return False
 
 
-with open(file_path, 'r', encoding='utf-8') as file:
-    for line in file:
-        line.strip()
-        lines.append(line)
+def read_file(file_path):
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            lines = file.readlines()
+        return lines
+    except FileNotFoundError:
+        print(f"Erro: O arquivo '{file_path}' não foi encontrado.")
+        return []
+    except IOError:
+        print(f"Erro: Não foi possível ler o arquivo '{file_path}'.")
+        return []
 
-for line in lines:
-        print(line) 
+
+def analyze_line(lines):
+    tokens = [] # Lista com os tokens
+    token = ""
+    
+    for line in lines:
+        for char in line:
+            if char in delimiters or char in operators:
+                if token:
+                    tokens.append(token)
+                    token = ""
+            token += char
+        return tokens
+            
+file_path = "io/input.niko"
+lines = read_file(file_path)
+print(analyze_line(lines))
