@@ -1,58 +1,62 @@
 import ast
+from graphviz import Digraph
 
-# Função para verificar a validade de um nó na árvore sintática
-def is_valid_node(node):
-    if isinstance(node, ast.Assign):  # Atribuição
-        return is_valid_node(node.value)
+# Função para gerar a árvore de execução
+def generate_execution_tree(node, graph, parent_id=None):
+    node_id = str(id(node))  # Identificador único para cada nó
     
-    elif isinstance(node, ast.BinOp):  # Operação Binária
-        if isinstance(node.op, (ast.Add, ast.Sub, ast.Mult, ast.Div)):
-            left_valid = is_valid_node(node.left)
-            right_valid = is_valid_node(node.right)
-            return left_valid and right_valid
-        return False
+    if isinstance(node, ast.Assign):
+        graph.node(node_id, "Assign: =")
+        if parent_id:
+            graph.edge(parent_id, node_id)
+        
+        # Lado esquerdo (identificador)
+        for target in node.targets:
+            generate_execution_tree(target, graph, node_id)
+        
+        # Lado direito (expressão)
+        generate_execution_tree(node.value, graph, node_id)
     
-    elif isinstance(node, ast.Constant):  # Número
-        return True
+    elif isinstance(node, ast.BinOp):
+        op_map = {ast.Add: "+", ast.Sub: "-", ast.Mult: "*", ast.Div: "/"}
+        op_label = op_map[type(node.op)]
+        graph.node(node_id, op_label)
+        if parent_id:
+            graph.edge(parent_id, node_id)
+        
+        # Operandos esquerdo e direito
+        generate_execution_tree(node.left, graph, node_id)
+        generate_execution_tree(node.right, graph, node_id)
     
-    elif isinstance(node, ast.Name):  # Identificador
-        return True
+    elif isinstance(node, ast.Name):
+        graph.node(node_id, f"Identifier: {node.id}")
+        if parent_id:
+            graph.edge(parent_id, node_id)
     
-    elif isinstance(node, ast.Expr):  # Expressão Raiz
-        return is_valid_node(node.value)
-    
-    elif isinstance(node, ast.UnaryOp):  # Operação Unária
-        if isinstance(node.op, (ast.UAdd, ast.USub)):
-            return is_valid_node(node.operand)
-        return False
-    
-    return False
+    elif isinstance(node, ast.Constant):
+        graph.node(node_id, f"Number: {node.value}")
+        if parent_id:
+            graph.edge(parent_id, node_id)
 
-# Função principal para verificar a expressão
-def check_expression(expression):
+# Função principal para criar a visualização
+def visualize_expression(expression):
     try:
-        # Verifica se há uma atribuição
-        if '=' not in expression:
-            return False
+        # Parse da expressão para gerar a árvore sintática
+        tree = ast.parse(expression, mode='exec')
         
-        identifier, expr = expression.split("=", 1)
-        identifier = identifier.strip()
-        expr = expr.strip()
+        # Criar um gráfico com Graphviz
+        graph = Digraph(format='png')
+        graph.attr(rankdir="TB")  # Orientação de cima para baixo
         
-        # Gera a árvore sintática abstrata
-        tree = ast.parse(expr, mode='eval') # Não sera tratada como instrução 
-        assign_node = ast.Assign(targets=[ast.Name(id=identifier, ctx=ast.Store())], value=tree.body) # Simula um atribuição de valor em Python
-        return is_valid_node(assign_node)
-    
-    except SyntaxError:
-        return False
+        # Gerar nós para a árvore
+        for node in tree.body:
+            generate_execution_tree(node, graph)
+        
+        # Renderizar o gráfico
+        graph.render("execution_tree", view=True)  # Salva e abre a árvore como um arquivo
+    except Exception as e:
+        print(f"Erro ao gerar a árvore: {e}")
 
-# Exemplos de uso
-expressions = [
-    "a = 3 + 4 * 2",  # Deve ser aceita
-]
-
-for expr in expressions:
-    result = check_expression(expr)
-    status = "Aceita" if result else "Não Aceita"
-    print(f"Expressão: '{expr}' -> {status}")
+# Testar com a expressão do exemplo
+expression = "a = 3 + 4 * 2"
+visualize_expression(expression)
